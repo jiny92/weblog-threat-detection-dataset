@@ -1,0 +1,77 @@
+# Normal Log Samples
+
+## Legitimate User Activity
+
+### User Login and Dashboard Access
+XXX.XXX.XXX.XXX - - [18/Nov/2024:17:15:43 +0900] "GET / HTTP/2.0" 302 102 "" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" -
+
+### User Authentication (SAML)
+XXX.XXX.XXX.XXX - - [18/Nov/2024:17:15:48 +0900] "POST /users/auth/saml/callback HTTP/2.0" 302 89 "https://saml.example.org/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" -
+
+### Project Page Access
+XXX.XXX.XXX.XXX - - [18/Nov/2024:17:16:20 +0900] "GET /organization/project-name HTTP/2.0" 200 14735 "https://git.example.org/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" 4.47
+
+### API Calls for Project Data
+XXX.XXX.XXX.XXX - - [18/Nov/2024:17:16:21 +0900] "POST /api/graphql HTTP/2.0" 200 496 "https://git.example.org/organization/project-name" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" 2.20
+
+### Repository Branch Information
+XXX.XXX.XXX.XXX - - [18/Nov/2024:17:16:21 +0900] "GET /api/v4/projects/93/repository/branches?search=&per_page=20&sort=updated_desc HTTP/2.0" 304 0 "https://git.example.org/organization/project-name" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" -
+
+## Static Resource Requests
+
+### Favicon Access
+XXX.XXX.XXX.XXX - - [17/Nov/2024:00:56:08 +0900] "GET //uploads/-/system/appearance/favicon/1/favicon.ico HTTP/1.1" 200 1293 "" "Go-http-client/1.1" -
+
+### Logo and Assets
+XXX.XXX.XXX.XXX - - [18/Nov/2024:17:15:43 +0900] "GET /assets/logo-example.svg HTTP/2.0" 200 480 "https://git.example.org/users/sign_in" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" -
+
+### Application Manifest
+XXX.XXX.XXX.XXX - - [18/Nov/2024:17:15:43 +0900] "GET /-/manifest.json HTTP/2.0" 304 0 "https://git.example.org/users/sign_in" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" -
+
+## Legitimate Bot/Crawler Activity
+
+### SEO Crawler (robots.txt access)
+XXX.XXX.XXX.XXX - - [19/Nov/2024:14:55:31 +0900] "GET /robots.txt HTTP/1.1" 301 162 "" "Mozilla/5.0 (compatible; DotBot/1.2; +https://opensiteexplorer.org/dotbot; help@moz.com)" -
+
+### SEO Crawler (successful robots.txt retrieval)
+XXX.XXX.XXX.XXX - - [19/Nov/2024:14:55:32 +0900] "GET /robots.txt HTTP/1.1" 200 3209 "" "Mozilla/5.0 (compatible; DotBot/1.2; +https://opensiteexplorer.org/dotbot; help@moz.com)" -
+
+## Sequence Examples
+
+### Sequence 1: User Login Flow (Length=3, IP-based grouping)
+```
+XXX.XXX.XXX.XXX - - [18/Nov/2024:17:15:43 +0900] "GET / HTTP/2.0" 302 102 "" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" -
+XXX.XXX.XXX.XXX - - [18/Nov/2024:17:15:43 +0900] "GET /users/sign_in HTTP/2.0" 200 4635 "" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" 2.49
+XXX.XXX.XXX.XXX - - [18/Nov/2024:17:15:45 +0900] "POST /users/auth/saml HTTP/2.0" 302 554 "https://git.example.org/users/sign_in" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" -
+```
+**Label**: Normal (0)
+**Temporal Window**: 2 seconds
+**Pattern**: Typical authentication workflow
+
+### Sequence 2: API Data Retrieval (Length=2, IP-based grouping)  
+```
+XXX.XXX.XXX.XXX - - [18/Nov/2024:17:16:21 +0900] "POST /api/graphql HTTP/2.0" 200 496 "https://git.example.org/project-name" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" 2.20
+XXX.XXX.XXX.XXX - - [18/Nov/2024:17:16:21 +0900] "GET /api/v4/projects/93/repository/branches?search=&per_page=20&sort=updated_desc HTTP/2.0" 304 0 "https://git.example.org/project-name" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" -
+```
+**Label**: Normal (0)
+**Temporal Window**: <1 second  
+**Pattern**: Concurrent API calls for project data
+
+### Sequence 3: Bot Crawler Activity (Length=2, IP-based grouping)
+```
+XXX.XXX.XXX.XXX - - [19/Nov/2024:14:55:31 +0900] "GET /robots.txt HTTP/1.1" 301 162 "" "Mozilla/5.0 (compatible; DotBot/1.2; +https://opensiteexplorer.org/dotbot; help@moz.com)" -
+XXX.XXX.XXX.XXX - - [19/Nov/2024:14:55:32 +0900] "GET /robots.txt HTTP/1.1" 200 3209 "" "Mozilla/5.0 (compatible; DotBot/1.2; +https://opensiteexplorer.org/dotbot; help@moz.com)" -
+```
+**Label**: Normal (0)
+**Temporal Window**: 1 second
+**Pattern**: Standard crawler behavior (redirect followed by successful access)
+
+---
+
+# Notes:
+- All IP addresses have been anonymized as XXX.XXX.XXX.XXX
+- Domain names changed to example.org 
+- Project/organization names generalized
+- Response times and status codes preserved
+- User-Agent strings show legitimate browser usage
+- These samples represent typical GitLab user interactions

